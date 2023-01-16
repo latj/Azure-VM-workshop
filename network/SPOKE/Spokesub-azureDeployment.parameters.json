@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "BaseName": {
+      "value": "spoke"
+    },
+    "GatewayRouteTable": {
+      "value": "r-nexthop-to-fw"
+    },
+    "ConnectionHubVNETName": {
+      "value": "vnet-hub"
+    },
+    "ConnectionhubNameRG": {
+      "value": "hub-rg"
+    },
+    "ConnectionhubNameSubID": {
+      "value": "e8acb171-66bd-488c-950d-7724bfb7ffae"
+    },
+    "SpokeAzureVNetAddressPrefix": {
+      "value": "10.10.0.0/23"
+    },
+    "VNETPeer01": {
+      "value": "/subscriptions/e8acb171-66bd-488c-950d-7724bfb7ffae/resourceGroups/hub-rg/providers/Microsoft.Network/virtualNetworks/vnet-hub"
+    },
+    "FirewallInternalIP": {
+      "value": "10.0.3.4"
+    },
+    "location": {
+      "value": "northeurope"
+    },
+    "regionname": {
+      "value": "neu"
+    },
+    "indexnumber": {
+      "value": "01"
+    },
+    "subnets": {
+      "value": {
+          "subnets":[
+              {
+                  "name": "sub1",
+                  "addressPrefix": "10.10.0.0/24"
+              }
+          ]
+      }
+  },
+    "routes": {
+      "value": [
+        {
+          "name": "DefaultRoute",
+          "addressprefix": "0.0.0.0/0"
+        }
+      ]
+    },
+    "tagvalue": {
+      "value": {
+        "fabobject": "12345"
+      }
+    }
+  }
+}
