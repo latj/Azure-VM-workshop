@@ -21,7 +21,7 @@ param azureVNetAddressPrefix string
 //// Resources
 
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: '${BaseName}-rg'
+  name: '${BaseName}-network-rg'
   location: location
 
 }

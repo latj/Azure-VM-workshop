@@ -1,18 +1,18 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-      "baseName": {
-          "value": "Contoso"
-      },
-      "location": {
-        "value": "SwedenCentral"
-    },
-      "azureVNetAddressPrefix": {
-          "value": "10.0.0.0/23"
-      },
-      "parSubnets": {
-        "value": [
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "baseName": {
+            "value": "contoso"
+        },
+        "location": {
+            "value": "SwedenCentral"
+        },
+        "azureVNetAddressPrefix": {
+            "value": "10.0.0.0/23"
+        },
+        "parSubnets": {
+            "value": [
                 {
                     "name": "AzureBastionSubnet",
                     "ipAddressRange": "10.0.0.0/26"
@@ -22,6 +22,6 @@
                     "ipAddressRange": "10.0.0.64/26"
                 }
             ]
-  }
-}
+        }
+    }
 }
