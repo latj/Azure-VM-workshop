@@ -15,6 +15,9 @@ param adminPassword string
 @description('Id of the subnet to attach the VM to')
 param subnetId string
 
+@description('Set to true to enable disk encryption')
+param diskEncryption bool
+
 var OSVersion = '2022-datacenter-azure-edition-core'
 var vmSize = 'Standard_D2s_v5'
 var vmName = '${baseName}-vm'
@@ -82,3 +85,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
     }
   }
 }
+
+/// OUTPUTS
+output vmName string = vm.name

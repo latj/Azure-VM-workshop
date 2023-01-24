@@ -15,6 +15,9 @@ param subnetName string
 @description('Username for the Virtual Machine.')
 param adminUsername string
 
+@description('Set to true to enable disk encryption')
+param diskEncryption bool = false
+
 @description('Password for the Virtual Machine.')
 @minLength(12)
 @secure()
@@ -30,7 +33,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  scope: resourceGroup('${baseName}-net-rg')
+  scope: resourceGroup('${baseName}-network-rg')
   name: '${baseName}-${networkNamePostfix}'
 }
 
@@ -41,7 +44,7 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing 
 
 //// Modules
 
-module vm 'vm.bicep' = {
+module vmModule 'vm.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'vm'
   params: {
@@ -50,6 +53,17 @@ module vm 'vm.bicep' = {
     subnetId: subnet.id
     adminPassword: adminPassword
     adminUsername: adminUsername
+    diskEncryption: diskEncryption
+  }
+}
+
+module diskEncryptionModule 'diskEncryption.bicep' = if (diskEncryption) {
+  scope: resourceGroup(rg.name)
+  name: 'diskEncryption'
+  params: {
+    baseName: baseName
+    location: location
+    vmName: vmModule.outputs.vmName
   }
 }
 
