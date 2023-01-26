@@ -15,10 +15,10 @@ param adminPassword string
 @description('Id of the subnet to attach the VM to')
 param subnetId string
 
-@description('Set to true to enable disk encryption')
-param diskEncryption bool
+@description('Sets the value of the backup tag')
+param enableBackupTag bool
 
-var OSVersion = '2022-datacenter-azure-edition-core'
+var OSVersion = '2022-datacenter'
 var vmSize = 'Standard_D2s_v5'
 var vmName = '${baseName}-vm'
 var nicName = '${vmName}-nic'
@@ -44,6 +44,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {
 resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   name: vmName
   location: location
+  tags: {
+    backup: (enableBackupTag) ? 'yes' : 'no'
+  }
   identity: {
     type: 'SystemAssigned'
   }

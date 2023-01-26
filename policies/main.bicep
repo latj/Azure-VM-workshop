@@ -6,6 +6,12 @@ param location string = 'SwedenCentral'
 @description('Base prefix of all resources')
 param baseName string 
 
+@description('Set to true to enable backup policy')
+param enableBackupPolicy bool = false
+
+@description('Set to true to enable data collection policy')
+param enableDataCollectionPolicy bool = false
+
 //// Variables
 var contributorRoleDefinitonId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
 
@@ -37,14 +43,33 @@ module identity 'identity.bicep' = {
   }
 }
 
+module monitor 'monitor.bicep' = if(enableDataCollectionPolicy) {
+  scope: resourceGroup(rg.name)
+  name: 'monitor'
+  params: {
+    baseName: baseName
+    location: location
+  }
+}
+
 module policyAssignments 'policyAssignments.bicep' = {
-  name: 'policyIdentity'
+  name: 'policyAssignments'
   params: {
     baseName: baseName
     location: location
     policyIdentityId: identity.outputs.identityId
+    dcrId: (enableDataCollectionPolicy) ? monitor.outputs.dcrId : ''
+    enableBackupPolicy: enableBackupPolicy
+    enableDataCollectionPolicy: enableDataCollectionPolicy
   }
 }
+
+
+
+
+
+
+
 
 //// Outputs
 

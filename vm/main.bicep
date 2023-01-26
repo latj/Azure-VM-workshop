@@ -18,6 +18,9 @@ param adminUsername string
 @description('Set to true to enable disk encryption')
 param diskEncryption bool = false
 
+@description('Sets the value of the backup tag')
+param enableBackupTag bool = false
+
 @description('Password for the Virtual Machine.')
 @minLength(12)
 @secure()
@@ -53,7 +56,7 @@ module vmModule 'vm.bicep' = {
     subnetId: subnet.id
     adminPassword: adminPassword
     adminUsername: adminUsername
-    diskEncryption: diskEncryption
+    enableBackupTag: enableBackupTag
   }
 }
 

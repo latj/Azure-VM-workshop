@@ -19,3 +19,7 @@ By passing the parameter `-diskEncryption $true` to the deployment of the `main.
 ```powershell
 New-AzSubscriptionDeployment -Name "diskEncryption" -Location "SwedenCentral" -TemplateFile main.bicep -TemplateParameterFile main.parameters.json -diskEncryption $true
 ```
+
+## Deploy a data collection rule
+
+// TODO
