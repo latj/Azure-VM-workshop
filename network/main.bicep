@@ -6,9 +6,9 @@ param location string
 
 param parSubnets array
 
-//var AzureFirewallManagementSubnet = resourceId('Microsoft.Network/virtualNetworks/subnets', BaseName_VNET.name, 'AzureFirewallManagementSubnet')
+//var AzureFirewallManagementSubnet = resourceId('Microsoft.Network/virtualNetworks/subnets', baseName_VNET.name, 'AzureFirewallManagementSubnet')
 @description('Base prefix of all resources')
-param BaseName string 
+param baseName string 
 
 @description('CIDR block representing the address space of the Azure VNet')
 param azureVNetAddressPrefix string
@@ -21,7 +21,7 @@ param azureVNetAddressPrefix string
 //// Resources
 
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: '${BaseName}-network-rg'
+  name: '${baseName}-network-rg'
   location: location
 
 }
@@ -32,18 +32,19 @@ module network 'network.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'network'
   params: {
-    BaseName: BaseName
+    baseName: baseName
     location: location
     azureVNetAddressPrefix: azureVNetAddressPrefix
     parSubnets: parSubnets
   }
 }
 
+
 module bastion 'AzureBastion.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'bastion'
   params: {
-    BaseName: BaseName
+    baseName: baseName
     location: location
     virtualnetwork: network.outputs.virtualnetwork
   }

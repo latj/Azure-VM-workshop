@@ -25,6 +25,7 @@ var configure_backup_on_virtual_machines_with_a_given_tag_to_a_new_recovery_serv
 var configure_windows_virtual_machines_to_be_associated_with_a_data_collection_rule_or_a_data_collection_endpoint = tenantResourceId('Microsoft.Authorization/policyDefinitions', '244efd75-0d92-453c-b9a3-7d73ca36ed52')
 //// Resources
 
+/* 
 resource guestConfigurationPrerequisitesAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
   name: '${baseName}-configure-guestconfiguration'
   location: location
@@ -38,8 +39,11 @@ resource guestConfigurationPrerequisitesAssignment 'Microsoft.Authorization/poli
     policyDefinitionId: deploy_prerequisites_to_enable_guest_configuration_policies_on_virtual_machines
   }
 }
+*/
 
-resource amaAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
+// Policy assignment that deploys the azure monitor agent on windows VMs
+// The policy assignment is only deployed if the paramarter `enableDataCollectionPolicy` is set to true
+resource amaAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = if(enableDataCollectionPolicy) {
   name: '${baseName}-configure-ama-on-winvm'
   location: location
   identity: {
@@ -53,7 +57,7 @@ resource amaAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = 
   }
 }
 
-// Policy assignment that deploys a data collection rule on windows VM's
+// Policy assignment that deploys a data collection rule on windows VMs
 // The policy assignment is only deployed if the paramarter `enableDataCollectionPolicy` is set to true
 resource dcrAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = if(enableDataCollectionPolicy) {
   name: '${baseName}-configure-dcr-on-winvm'

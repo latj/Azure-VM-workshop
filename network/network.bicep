@@ -3,7 +3,7 @@
 param location string
 
 @description('Base prefix of all resources')
-param BaseName string
+param baseName string
 
 @description('CIDR block representing the address space of the Azure VNet')
 param azureVNetAddressPrefix string
@@ -26,12 +26,12 @@ var varSubnetProperties = [for subnet in parSubnets: {
 }]
 
 //// Resources
-/* resource BaseName_VNET 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
-  name: toLower('${BaseName}-VNET')
+/* resource baseName_VNET 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
+  name: toLower('${baseName}-VNET')
 } */
 
-resource BaseName_VNET 'Microsoft.Network/virtualNetworks@2022-07-01' = {
-  name: toLower('${BaseName}-VNET')
+resource baseName_VNET 'Microsoft.Network/virtualNetworks@2022-07-01' = {
+  name: toLower('${baseName}-VNET')
   location: location
   properties: {
     dhcpOptions: {
@@ -219,4 +219,4 @@ resource GenericSubnettNSG 'Microsoft.Network/networkSecurityGroups@2022-07-01' 
 
 
 
-output virtualnetwork string = BaseName_VNET.name
+output virtualnetwork string = baseName_VNET.name

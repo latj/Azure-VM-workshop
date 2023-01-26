@@ -5,13 +5,13 @@ param virtualnetwork string
 
 var AzureBastionSubnet = resourceId('Microsoft.Network/virtualNetworks/subnets', virtualnetwork, 'AzureBastionSubnet')
 @description('Base prefix of all resources')
-param BaseName string
+param baseName string
 
 
 //// Resources
 
 resource bastionpublicIP 'Microsoft.Network/publicIPAddresses@2021-08-01' = {
-  name: '${BaseName}-pip-mgmt'
+  name: '${baseName}-pip-mgmt'
   location: location
   sku: {
     name: 'Standard'
@@ -23,7 +23,7 @@ resource bastionpublicIP 'Microsoft.Network/publicIPAddresses@2021-08-01' = {
 }
 
 resource azurebastion 'Microsoft.Network/bastionHosts@2022-07-01' = {
-  name: '${BaseName}-bastion'
+  name: '${baseName}-bastion'
   location: location
   sku: {
      name: 'Basic'
