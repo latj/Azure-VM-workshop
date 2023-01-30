@@ -17,10 +17,14 @@ var contributorRoleDefinitonId = subscriptionResourceId('Microsoft.Authorization
 
 //// Resources
 
+resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' existing = {
+  scope: resourceGroup('${baseName}-monitor-rg')
+  name: '${baseName}-default-dcr'
+}
+
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: '${baseName}-policy-rg'
   location: location
-
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -36,29 +40,20 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 
 module identity 'identity.bicep' = {
   scope: resourceGroup(rg.name)
-  name: 'policyIdentity'
+  name: '${deployment().name}-policyIdentity'
   params: {
     name: '${baseName}-policyIdentity'
     location: location
   }
 }
 
-module monitor 'monitor.bicep' = if(enableDataCollectionPolicy) {
-  scope: resourceGroup(rg.name)
-  name: 'monitor'
-  params: {
-    baseName: baseName
-    location: location
-  }
-}
-
 module policyAssignments 'policyAssignments.bicep' = {
-  name: 'policyAssignments'
+  name: '${deployment().name}-policyAssignments'
   params: {
     baseName: baseName
     location: location
     policyIdentityId: identity.outputs.identityId
-    dcrId: (enableDataCollectionPolicy) ? monitor.outputs.dcrId : ''
+    dcrId: (enableDataCollectionPolicy) ? dcr.id : ''
     enableBackupPolicy: enableBackupPolicy
     enableDataCollectionPolicy: enableDataCollectionPolicy
   }

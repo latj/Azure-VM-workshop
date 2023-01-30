@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
 @description('Location to create the resource group in')
-param location string = 'SwedenCentral'
+param location string
 
 @description('Base prefix of all resources')
 param baseName string

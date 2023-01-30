@@ -14,7 +14,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   }
 }
 
-
 resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' = {
   name: '${baseName}-default-dcr'
   location: location
@@ -51,4 +50,7 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' = {
   }
 }
 
+//// OUTPUTS
+
 output dcrId string = dcr.id
+output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id

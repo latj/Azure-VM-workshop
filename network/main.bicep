@@ -39,7 +39,7 @@ module network 'network.bicep' = {
   }
 }
 
-
+/*
 module bastion 'AzureBastion.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'bastion'
@@ -49,7 +49,7 @@ module bastion 'AzureBastion.bicep' = {
     virtualnetwork: network.outputs.virtualnetwork
   }
 }
-
+*/
 
 //// Outputs
 

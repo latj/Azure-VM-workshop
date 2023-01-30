@@ -16,10 +16,13 @@ param subnetName string
 param adminUsername string
 
 @description('Set to true to enable disk encryption')
-param diskEncryption bool = false
+param enableDiskEncryption bool = false
 
 @description('Sets the value of the backup tag')
 param enableBackupTag bool = false
+
+@description('Sets to true to enable VM Insights')
+param enableVmInsights bool = false
 
 @description('Password for the Virtual Machine.')
 @minLength(12)
@@ -49,7 +52,7 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing 
 
 module vmModule 'vm.bicep' = {
   scope: resourceGroup(rg.name)
-  name: 'vm'
+  name: '${deployment().name}-vm'
   params: {
     baseName: baseName
     location: location
@@ -60,15 +63,29 @@ module vmModule 'vm.bicep' = {
   }
 }
 
-module diskEncryptionModule 'diskEncryption.bicep' = if (diskEncryption) {
+module diskEncryptionModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
-  name: 'diskEncryption'
+  name: '${deployment().name}-diskEncryption'
   params: {
     baseName: baseName
     location: location
     vmName: vmModule.outputs.vmName
   }
 }
+
+module vmInsightsModule 'vmInsights.bicep' = if (enableVmInsights) {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-vmInsights'
+  params: {
+    baseName: baseName
+    location: location
+    vmName: vmModule.outputs.vmName
+    logAnalyticsName: '${baseName}-logs'
+  }
+}
+
+
+
 
 //// Outputs
 

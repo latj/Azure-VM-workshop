@@ -7,15 +7,6 @@
         },
         "location": {
             "value": "SwedenCentral"
-        },
-        "networkNamePostfix": {
-            "value": "vnet"
-        },
-        "subnetName": {
-            "value": "vm1"
-        },
-        "adminUsername": {
-            "value": "johnDoe"
         }
     }
 }
