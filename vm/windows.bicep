@@ -18,8 +18,10 @@ param subnetId string
 @description('Sets the value of the backup tag')
 param enableBackupTag bool
 
+var publisher = 'MicrosoftWindowsServer'
+var offer = 'WindowsServer'
 var OSVersion = '2022-datacenter'
-var vmSize = 'Standard_D2s_v5'
+var vmSize = 'Standard_B2s'
 var vmName = '${baseName}-vm'
 var nicName = '${vmName}-nic'
 
@@ -67,15 +69,15 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
     }
     storageProfile: {
       imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
+        publisher: publisher
+        offer: offer
         sku: OSVersion
         version: 'latest'
       }
       osDisk: {
         createOption: 'FromImage'
         managedDisk: {
-          storageAccountType: 'StandardSSD_LRS'
+          storageAccountType: 'Standard_LRS'
         }
       }
     }

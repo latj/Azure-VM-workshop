@@ -10,6 +10,12 @@ param vmName string
 @description('Vm to apply encryption on')
 param logAnalyticsName string
 
+@description('Set to true if VM is Windows')
+param isWindows bool = false
+
+@description('Set to true if VM is Linux')
+param isLinux bool = false
+
 resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' existing = {
   name: vmName
 }
@@ -18,7 +24,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10
   name: logAnalyticsName
 }
 
-resource windowsAgent 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = {
+resource windowsAgent 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = if(isWindows) {
   name: 'AzureMonitorWindowsAgent'
   parent: vm
   location: location
@@ -31,8 +37,21 @@ resource windowsAgent 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' 
   }
 }
 
+resource linuxAgent 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = if(isLinux) {
+  name: 'AzureMonitorLinuxAgent'
+  parent: vm
+  location: location
+  properties: {
+    publisher: 'Microsoft.Azure.Monitor'
+    type: 'AzureMonitorLinuxAgent'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+  }
+}
+
 resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' = {
-  name: '${baseName}-default-dcr'
+  name: '${vmName}-default-dcr'
   location: location
   kind: 'Windows'
   properties: {
@@ -68,7 +87,7 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' = {
 }
 
 resource association 'Microsoft.Insights/dataCollectionRuleAssociations@2021-09-01-preview' = {
-  name: '${baseName}-vminsights-dcr-associationName'
+  name: '${vmName}-vminsights-dcr-association'
   scope: vm
   properties: {
     description: 'Association of data collection rule. Deleting this association will break the data collection for this virtual machine.'

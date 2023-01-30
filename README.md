@@ -103,6 +103,9 @@ The first step is to deploy a plain virtual machine. To create a virtual machine
 az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
+The template deploys both a windows virtual machine and a Linux virtual machine. You can view the virtual machines through the Azure portal.
+
+
 ### 3.2 Enable Disk Encryption on the VM
 
 [Azure Disk Encryption](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. This solution is integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
@@ -113,9 +116,56 @@ By passing the parameter `-diskEncryption $true` to the deployment of the `main.
 az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
 ```
 
-### 3.3 Deploy a data collection rule
 
-// TODO: Instructions for enabling VM-Insights and DCR manually
+### 3.3 Enable VM Insights and Deploy a data collection rule
+
+[VM insights](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-overview) monitors the performance and health of virtual machines. It can be accessed in the portal by navigating to the Virtual Machine and then selecting "Insights" from the "Monitoring" Section in the left pane.
+
+Currently VM Insights is not configured and thus no data will be shown.
+
+To enable VM Insights a few actions must be taken:
+
+- Enable the [Azure Monitor Agent](https://learn.microsoft.com/en-us/azure/azure-monitor/agents/agents-overview)
+- Define a [data collection rule](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-overview)
+- Associate the Data collection rule with the Virtual machine
+
+The below command will enable the [vm/vmInsights.bicep](vm/vmInsights.bicep) module in the deployment:
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "vmWithDcr" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableVmInsights='true'
+```
+
+Once the new virtual machines have been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It should now contain data.
+
+### Step 3.4 Configure the OS on deploy
+
+#### Linux: Cloud Init
+
+[cloud-init] (https://learn.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init) is a widely used approach to customize a Linux VM as it boots for the first time. You can use cloud-init to install packages and write files, or to configure users and security. Because cloud-init is called during the initial boot process, there are no additional steps or required agents to apply your configuration.
+
+cloud-init can be used for basically any configuration task, for example installing packages or writing configuration files.
+
+cloud-init has multiple input types and it will use the first line of the input to determine the type. Two common input types are:
+
+- `#cloud-config`: The cloud-init config type works across distributions, for example rather than installing packages directly the packages are listed and cloud-init uses the native package manager to install them
+- `#!/bin/bash`: A bash script can be used as input to cloud-init. While a bash script (probably) won't work across distributions it is a simple way to execute an already existing setup script using cloud-init
+
+The script [vm/setup.sh](vm/setup.sh) writes a line to the file `/tmp/cloudInit.txt` when it executes. To feed the script into cloud-init use the commands below:
+
+**Since cloud-init only runs on the first boot, we must first delete the VM's we deployed earlier**
+
+```powershell
+az group delete --name contoso-vm-rg
+```
+
+**Deploy the virtual machines feeding the vm/setup.sh into cloud-init**
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "vmWithInit" --template-file vm/main.bicep --parameters @vm/main.parameters.json customData=@vm/setup.sh
+```
+
+#### Windows: TODO
+// TODO
 
 ## Step 4: Manage virtual machines at scale using Azure Policy
 
@@ -143,7 +193,7 @@ az group delete --name contoso-vm-rg
 to redeploy the machine, please run
 
 ```powershell
-az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @main.parameters.json enableDiskEncryption='true'
+az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableDiskEncryption='true'
 ```
 
 Once the new virtual machine has been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It will say that Insights is not yet configured. In a few minutes when the policy has executed it should be automatically configured and display data

@@ -15,6 +15,9 @@ param subnetName string
 @description('Username for the Virtual Machine.')
 param adminUsername string
 
+@description('Custom Data to send to the VM')
+param customData string = ''
+
 @description('Set to true to enable disk encryption')
 param enableDiskEncryption bool = false
 
@@ -48,9 +51,23 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing 
   name: subnetName
 }
 
-//// Modules
+//// Modules - Virtual Machines
 
-module vmModule 'vm.bicep' = {
+module linuxVmModule 'linux.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-linux-vm'
+  params: {
+    baseName: baseName
+    location: location
+    subnetId: subnet.id
+    adminPassword: adminPassword
+    adminUsername: adminUsername
+    enableBackupTag: enableBackupTag
+    customData: customData
+  }
+}
+
+module windowsVmModule 'windows.bicep' = {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-vm'
   params: {
@@ -63,27 +80,52 @@ module vmModule 'vm.bicep' = {
   }
 }
 
-module diskEncryptionModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
+//// Modules - Disk Encryption
+module diskEncryptionWindowsModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
-  name: '${deployment().name}-diskEncryption'
+  name: '${deployment().name}-WindowsDiskEncryption'
   params: {
     baseName: baseName
     location: location
-    vmName: vmModule.outputs.vmName
+    vmName: windowsVmModule.outputs.vmName
   }
 }
 
-module vmInsightsModule 'vmInsights.bicep' = if (enableVmInsights) {
+module diskEncryptionLinuxModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
-  name: '${deployment().name}-vmInsights'
+  name: '${deployment().name}-LinuxDiskEncryption'
   params: {
     baseName: baseName
     location: location
-    vmName: vmModule.outputs.vmName
+    vmName: linuxVmModule.outputs.vmName
+  }
+}
+
+//// Modules - VM Insights
+
+module vmInsightsWindowsModule 'vmInsights.bicep' = if (enableVmInsights) {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-WindowsVmInsights'
+  params: {
+    baseName: baseName
+    location: location
+    vmName: windowsVmModule.outputs.vmName
     logAnalyticsName: '${baseName}-logs'
+    isWindows: true
   }
 }
 
+module vmInsightsLinuxModule 'vmInsights.bicep' = if (enableVmInsights) {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-LinuxVmInsights'
+  params: {
+    baseName: baseName
+    location: location
+    vmName: linuxVmModule.outputs.vmName
+    logAnalyticsName: '${baseName}-logs'
+    isLinux: true
+  }
+}
 
 
 
