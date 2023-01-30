@@ -71,7 +71,9 @@ To close the editor, open the `...` action panel in the top right of the editor 
 - Open file (while inside the editor): `CTRL` + `P`
 
 
-## Step 1: Deploy the network
+## Challenge 1: Deploy supporting Infrastructure
+
+### 1.1 Deploy Network
 
 Before any virtual machines can be deployed there needs to be a network to deploy them into. The folder [network/](network/) contains a set of bicep templates that deploy a simple network and an [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-overview) host that can be used to deploy the machines.
 
@@ -81,21 +83,21 @@ The network can be deployed using the following command
 az deployment sub create --location "SwedenCentral" --name "network" --template-file network/main.bicep --parameters @network/main.parameters.json
 ```
 
-## Step 2: Deploy Monitoring Capabilities
+### 1.2 Deploy Monitoring Capabilities
 
 To collect telemetry data from virtual machines a [Log analytics workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview) and [data collection rules](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-overview) are needed. In this lab series we will deploy a central log analytics workspace which multiple virtual machines can use to send their logs to.
 
 The folder [monitoring/](monitoring/) contains a set of bicep templates that deploys a log analytics workspace along with a few example data collection rules. They can be deployed using the following command:
 
 ```powershell
-az deployment sub create --location "SwedenCentral" --name "monitor" --template-file monitoring/main.bicep --parameters @monitoring/main.parameters.json
+az deployment sub create --location "SwedenCentral" --name "monitor" --template-file monitor/main.bicep --parameters @monitor/main.parameters.json
 ```
 
-## Step 3: Deploy a virtual machine
+## Challenge 2: Deploy VMs with different settings using Bicep
 
 The folder [vm/](vm/) contains templates to deploy and configure [virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/overview).
 
-### 3.1. Deploy a plain windows virtual machine
+### 2.1 Deploy plain virtual machines
 
 The first step is to deploy a plain virtual machine. To create a virtual machine with an [OS disk](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) and a [network interface card](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface?tabs=network-interface-portal) connected to the previously created network please use the below command
 
@@ -103,21 +105,21 @@ The first step is to deploy a plain virtual machine. To create a virtual machine
 az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
-The template deploys both a windows virtual machine and a Linux virtual machine. You can view the virtual machines through the Azure portal.
+The template deploys both a windows virtual machine (defined in `windows.bicep`) and a Linux virtual machine (defined in `linux.bicep`). The machines can be viewed through the Azure Portal.
 
+### 2.2 Enable Disk Encryption on the VM
 
-### 3.2 Enable Disk Encryption on the VM
+// TODO - FIX BICEP FOR LINUX
 
-[Azure Disk Encryption](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. This solution is integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
+[Azure Disk Encryption for Windows Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. [Azure Disk Encryption for Linux virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview)uses the DM-Crypt feature of Linux to provide full disk encryption of the OS disk and data disks. Both solutions are integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
 
-By passing the parameter `-diskEncryption $true` to the deployment of the `main.bicep` file the content of `diskEncryption.bicep` is deployed in addition to what is inside the `vm.bicep` file. This will create a key in a key vault which will be used to encrypt the disks on the VM using  Azure Disk Encryption
+By passing the parameter `-diskEncryption $true` to the deployment of the `main.bicep` file the content of `diskEncryption.bicep` is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a key in a key vault which will be used to encrypt the disks on the VM using  Azure Disk Encryption
 
 ```powershell
 az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
 ```
 
-
-### 3.3 Enable VM Insights and Deploy a data collection rule
+### 2.3 Enable VM Insights and Deploy a data collection rule
 
 [VM insights](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-overview) monitors the performance and health of virtual machines. It can be accessed in the portal by navigating to the Virtual Machine and then selecting "Insights" from the "Monitoring" Section in the left pane.
 
@@ -137,9 +139,57 @@ az deployment sub create --location "SwedenCentral" --name "vmWithDcr" --templat
 
 Once the new virtual machines have been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It should now contain data.
 
-### Step 3.4 Configure the OS on deploy
+## Challenge 3: Manage virtual machines at scale using Azure Policy
 
-#### Linux: Cloud Init
+In step 2.3 a data collection rule was created and attached to the VM by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
+
+There is a rich set of [built in policy definitions](https://learn.microsoft.com/en-us/azure/governance/policy/samples/built-in-policies) in Azure that can be used out of the box. There is also the possibility to define custom policies to taylored to specific needs.
+
+### 3.1 Enable VM Insights using custom Azure policies
+
+In this example we will be using a set of custom policies defined in `policies/customPolicies.bicep`. The policies deploys the Azure monitoring agent extension as well as configures a data collection rule. To enable the policy on the subscription run the following command
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "policyWithDataCollectionRule" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDataCollectionPolicy='true'
+```
+
+As we previously deployed and configured  virtual machines with VM Insights enabled, let's remove those virtual machines and redeploy without VM Insights. This should trigger the policy to add VM-Insights
+
+To remove the resource group containing the Virtual Machine, please run
+
+```powershell
+az group delete --name contoso-vm-rg
+```
+
+to redeploy the machine, please run
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableDiskEncryption='true'
+```
+
+Once the new virtual machine has been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It will say that Insights is not yet configured. In a few minutes when the policy has executed it should be automatically configured and display data
+
+### 3.2 Enable Azure backup using a built in Azure policy
+
+Also [Azure backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview) can be enabled using Azure policy
+
+To enable the built in policy for backups on the subscription run the following command:
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "policyWithBackup" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableBackupPolicy='true'
+```
+
+The backup policy is configured to target all virtual machines with the tag `backup` set to `yes`. The tag value can be set to yes either through the portal or by re-running the deployment of the VM with the tag `enableBackupTag` set to true:
+
+```powershell
+az deployment sub create --location "SwedenCentral" --name "vmWithBackupTag" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableBackupTag='true'
+```
+
+Once the policy runs it will create a new [Service Recovery Vault](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview) in the same resource group as the virtual machine and configure a daily backup of the machine to the vault
+
+## Challenge 4: Configure the OS on deploy
+
+### 4.1 Linux: Cloud Init
 
 [cloud-init] (https://learn.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init) is a widely used approach to customize a Linux VM as it boots for the first time. You can use cloud-init to install packages and write files, or to configure users and security. Because cloud-init is called during the initial boot process, there are no additional steps or required agents to apply your configuration.
 
@@ -164,61 +214,14 @@ az group delete --name contoso-vm-rg
 az deployment sub create --location "SwedenCentral" --name "vmWithInit" --template-file vm/main.bicep --parameters @vm/main.parameters.json customData=@vm/setup.sh
 ```
 
-#### Windows: TODO
+Connect to the VM through bastion and verify the contents of `/tmp/cloudInit.txt` (which should have been created by cloud init on the first boot)
+
+### 4.2 Windows: TODO
 // TODO
-
-## Step 4: Manage virtual machines at scale using Azure Policy
-
-In step 3.3 a data collection rule was created and attached to the VM by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
-
-### Step 4.2: Create a data collection rule using Azure Policy
-
-//TODO: THIS DOES NOT WORK IN SWEDEN CENTRAL, SINCE THE BUILT IN POLICIES DOES NOT TARGET RESOURCES THERE
-// REWRITE THIS USING CUSTOM POLICIES - IT WILL BE A GOOD DEMONSTRATION
-
-To enable the policy on the subscription run the following command
-
-```powershell
-az deployment sub create --location "SwedenCentral" --name "policyWithDataCollectionRule" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDataCollectionPolicy='true'
-```
-
-As we previously deployed and configured a virtual machine with VM Insights enabled, let's remove that Virtual Machine and redeploy without VM Insights. This should trigger the policy to add VM-Insights
-
-To remove the resource group containing the Virtual Machine, please run
-
-```powershell
-az group delete --name contoso-vm-rg
-```
-
-to redeploy the machine, please run
-
-```powershell
-az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableDiskEncryption='true'
-```
-
-Once the new virtual machine has been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It will say that Insights is not yet configured. In a few minutes when the policy has executed it should be automatically configured and display data
-
-### Step 4.3: Enable Azure backup using Azure policy
-
-Also [Azure backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview) can be enabled using Azure policy
-
-To enable the policy on the subscription run the following command
-
-```powershell
-az deployment sub create --location "SwedenCentral" --name "policyWithBackup" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableBackupPolicy='true'
-```
-
-The backup policy is configured to target all virtual machines with the tag `backup` set to `yes`. The tag value can be set to yes either through the portal or by re-running the deployment of the VM with the tag `enableBackupTag` set to true:
-
-```powershell
-az deployment sub create --location "SwedenCentral" --name "vmWithBackupTag" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableBackupTag='true'
-```
-
-Once the policy runs it will create a new [Service Recovery Vault](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview) in the same resource group as the virtual machine and configure a daily backup of the machine to the vault
-
 ## Clean Up
 
 1. Remove all resource groups created
    - Remove Backup Vault
 2. Remove policy assignments from subscription
-3. Remove orphaned role assignments on subscription
+3. Remove Custom policy definitions on the subscription
+4. Remove orphaned role assignments on the subscription

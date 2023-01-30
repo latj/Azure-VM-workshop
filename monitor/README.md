@@ -5,5 +5,5 @@ The templates in this folder creates and deploys a [log analytics workspace](htt
 ## Deploy the identity and policy assignments
 
 ```powershell
-New-AzSubscriptionDeployment -Name "monitoring" -Location "SwedenCentral" -TemplateFile main.bicep -TemplateParameterFile main.parameters.json
+az deployment sub create --location "SwedenCentral" --name "monitor" --template-file main.bicep --parameters @main.parameters.json
 ```

@@ -1,3 +1,7 @@
+// This file deploys monitoring resources into the monitoring resource group
+// - A log analytics workspace
+// - A data collection rule
+
 @description('Base prefix of all resources')
 param baseName string
 

@@ -90,5 +90,28 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   }
 }
 
+/* 
+resource DiskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = if(enableDiskEncryption) {
+  name: 'AzureDiskEncryption'
+  parent: vm
+  location: location
+  properties: {
+    publisher: 'Microsoft.Azure.Security'
+    type: 'AzureDiskEncryptionForLinux'
+    typeHandlerVersion: '1.1'
+    autoUpgradeMinorVersion: true
+    forceUpdateTag: '1.0'
+    settings: {
+      EncryptionOperation: 'EnableEncryption'
+      KeyVaultURL: vault.properties.vaultUri
+      KeyVaultResourceId: vault.id
+      KekVaultResourceId: vault.id
+      KeyEncryptionKeyURL: key.properties.keyUriWithVersion
+      VolumeType: 'All'
+      ResizeOSDisk: false
+    }
+  }
+}
+*/
 /// OUTPUTS
 output vmName string = vm.name

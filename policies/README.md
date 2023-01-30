@@ -6,5 +6,5 @@ They also create a user assigned managed identity and assigns it the Azure RBAC 
 ## Deploy the identity and policy assignments
 
 ```powershell
-New-AzSubscriptionDeployment -Name "policy" -Location "SwedenCentral" -TemplateFile main.bicep -TemplateParameterFile main.parameters.json
+az deployment sub create --location "SwedenCentral" --name "policy" --template-file main.bicep --parameters @main.parameters.json enableBackupPolicy='true'
 ```

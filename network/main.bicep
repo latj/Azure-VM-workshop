@@ -1,5 +1,10 @@
-targetScope = 'subscription'
+// This file is the main file for deploying shared networking resources
+// It deploys 
+// - A network resource group 
+// - A vnet, nsg, subnets etc through the module "network.bicep"
+// - An Azure Bastion host through the module "AzureBastion.bicep"
 
+targetScope = 'subscription'
 
 @description('CIDR block representing the address space of the Azure VNet')
 param location string
@@ -12,9 +17,6 @@ param baseName string
 
 @description('CIDR block representing the address space of the Azure VNet')
 param azureVNetAddressPrefix string
-
-
-
 
 //// Variables
 

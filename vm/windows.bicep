@@ -22,7 +22,7 @@ var publisher = 'MicrosoftWindowsServer'
 var offer = 'WindowsServer'
 var OSVersion = '2022-datacenter'
 var vmSize = 'Standard_B2s'
-var vmName = '${baseName}-vm'
+var vmName = '${baseName}-win-vm'
 var nicName = '${vmName}-nic'
 
 resource nic 'Microsoft.Network/networkInterfaces@2021-02-01' = {

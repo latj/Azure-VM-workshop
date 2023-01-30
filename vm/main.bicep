@@ -69,7 +69,7 @@ module linuxVmModule 'linux.bicep' = {
 
 module windowsVmModule 'windows.bicep' = {
   scope: resourceGroup(rg.name)
-  name: '${deployment().name}-vm'
+  name: '${deployment().name}-win-vm'
   params: {
     baseName: baseName
     location: location
