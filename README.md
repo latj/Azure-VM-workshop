@@ -339,6 +339,37 @@ The policy will apply to all resources created in the future, as well as all fut
 
 After you have done any change or update to the VM you will see that it has the new tag assigned
 
+### 3.4 Configure Azure Activity logs to stream to log analytics using built in policy (deployIfNotExists)
+
+There is a built in policy called [Configure Azure Activity logs to stream to specified Log Analytics workspace](https://portal.azure.com/#view/Microsoft_Azure_Policy/PolicyDetailBlade/definitionId/%2Fproviders%2FMicrosoft.Authorization%2FpolicyDefinitions%2F2465583e-4e78-4c15-b6be-a36cbc7c8b0f)
+
+```bicep
+resource activityLogsToLawAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
+  name: '${baseName}-configure-activityLogsToLaw'
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${policyIdentityId}': {}
+    }
+  }
+  properties: {
+    policyDefinitionId: tenantResourceId('Microsoft.Authorization/policyDefinitions', '2465583e-4e78-4c15-b6be-a36cbc7c8b0f')
+    parameters: {
+      logAnalytics: {
+        value: logAnalyticsId
+      }
+    }
+  }
+}
+```
+
+To deploy the policy, run the following command:
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "policy" --template-file policies/main.bicep --parameters @policies/main.parameters.json
+```
+
 ### 3.4 Enable Microsoft Defender for cloud through built in policy (deployIfNotExists)
 
 ### 3.5 Enable Azure backup using a built in Azure policy

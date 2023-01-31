@@ -15,6 +15,9 @@ param policyIdentityId string
 @description('Id of the data collection rule to use with Azure policy')
 param dcrId string
 
+@description('Id of the log analytics workspace to use with azure policy')
+param logAnalyticsId string
+
 @description('Set to true to enable backup policy')
 param enableBackupPolicy bool = false
 
@@ -38,7 +41,6 @@ param linuxDcrPolicyId string
 //var configure_linux_virtual_machines_to_be_associated_with_a_data_collection_rule_or_a_data_collection_endpoint = tenantResourceId('Microsoft.Authorization/policyDefinitions', '58e891b9-ce13-4ac3-86e4-ac3e1f20cb07')
 
 var network_interfaces_should_not_have_public_ips = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83a86a26-fd1f-447c-b59d-e51f44264114')
-
 var configure_backup_on_virtual_machines_with_a_given_tag_to_a_new_recovery_services_vault_with_a_default_policy = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83644c87-93dd-49fe-bf9f-6aff8fd0834e')
 //// Resources
 
