@@ -23,7 +23,7 @@ param enableBackupTag bool
 
 var publisher = 'MicrosoftWindowsServer'
 var offer = 'WindowsServer'
-var OSVersion = '2022-datacenter'
+var OSVersion = '2019-Datacenter'
 var vmSize = 'Standard_D2as_v5'
 var vmName = '${baseName}-win-vm'
 var nicName = '${vmName}-nic'
