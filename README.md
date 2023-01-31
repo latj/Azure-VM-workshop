@@ -222,7 +222,7 @@ In step 2.2 the data collection rule was created and attached to the VMs by modi
 
 There is a rich set of [built in policy definitions](https://learn.microsoft.com/en-us/azure/governance/policy/samples/built-in-policies) in Azure that can be used out of the box. There is also the possibility to define custom policies tailored to specific needs.
 
-### 3.1 Enable VM Insights using custom Azure policies
+### 3.1 Enable VM Insights using custom Azure policies (deployIfNotExists)
 
 In this example we will be using a set of custom policies defined in `policies/customPolicies.bicep`. The policies deploys the Azure monitoring agent extension as well as configures a data collection rule. To enable the policy on the subscription run the following command
 
@@ -245,6 +245,56 @@ az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption
 ```
 
 Once the new virtual machine has been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It will say that Insights is not yet configured. In a few minutes when the policy has executed it should be automatically configured and display data
+
+### 3.2 Add a policy that blocks deployments of public IP-addresses (Deny)
+
+A deny-policy is a policy that disallows certain actions or resources by blocking them. A common example is to deny assignment of public IP addresses directly to virtual machines. By assigning the policy called `Network interfaces should not have public IPs` to the subscription (or the resource group containing the virtual machines) it will not be possible to assign a public IP to the NIC on the virtual machine.
+
+#### Option 1: Assign the policy from the Azure portal
+
+1. Navigate to "Policy" by using the search field in the top navigation bar
+2. Select "Definitions" from the left hand side panel
+3. Filter the list by name (Enter `Network interfaces should not have public IPs` in the search field)
+4. Click on the policy definition
+5. Click "Assign"
+6. Select the Virtual machine resource group as scope
+7. Click "Review + Create"
+
+#### Option 2: Assign the policy using bicep
+
+The policy could of course be deployed using a bicep template as well.
+
+The below command deploys the policy assignment:
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "policyWithDenyPublicIp" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDenyPublicIp='true'
+```
+
+#### Try to create a public ip and assign it to a VM
+
+A new public IP can be created in the vm resource group using the below command
+
+```bash
+az network public-ip create --name "test-pip" --resource-group "contoso-vm-rg"
+```
+
+To assign the public IP to the NIC of the Linux VM, use the below command:
+
+```bash
+az network nic ip-config update --name "ipconfig1" --nic-name "contoso-linux-vm-nic" --resource-group "contoso-vm-rg" --public-ip-address "test-pip"
+```
+
+Since there is a policy that does not allow NICs to be associated with public IPs, you should get an error of type `RequestDisallowedByPolicy`
+
+To clean up, remove the public IP using the following command
+
+```bash
+az network public-ip delete --name "test-pip" --resource-group "contoso-vm-rg"
+```
+
+### 3.3 Add a policy that automatically append tags to deployed resources (Append)
+
+### 3.4 Enable Microsoft Defender for cloud through built in policy (deployIfNotExists)
 
 ### 3.2 Enable Azure backup using a built in Azure policy
 

@@ -21,6 +21,9 @@ param enableBackupPolicy bool = false
 @description('Set to true to enable data collection policy')
 param enableDataCollectionPolicy bool = false
 
+@description('Set to true to deny public IP adresses on network interface cards')
+param enableDenyPublicIp bool = false
+
 param winAmaPolicyId string
 param winDcrPolicyId string
 param linuxAmaPolicyId string
@@ -33,6 +36,8 @@ param linuxDcrPolicyId string
 //var deploy_prerequisites_to_enable_guest_configuration_policies_on_virtual_machines = tenantResourceId('Microsoft.Authorization/policySetDefinitions', '12794019-7a00-42cf-95c2-882eed337cc8')
 //var configure_windows_virtual_machines_to_be_associated_with_a_data_collection_rule_or_a_data_collection_endpoint = tenantResourceId('Microsoft.Authorization/policyDefinitions', '244efd75-0d92-453c-b9a3-7d73ca36ed52')
 //var configure_linux_virtual_machines_to_be_associated_with_a_data_collection_rule_or_a_data_collection_endpoint = tenantResourceId('Microsoft.Authorization/policyDefinitions', '58e891b9-ce13-4ac3-86e4-ac3e1f20cb07')
+
+var network_interfaces_should_not_have_public_ips = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83a86a26-fd1f-447c-b59d-e51f44264114')
 
 var configure_backup_on_virtual_machines_with_a_given_tag_to_a_new_recovery_services_vault_with_a_default_policy = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83644c87-93dd-49fe-bf9f-6aff8fd0834e')
 //// Resources
@@ -135,6 +140,22 @@ resource backupAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01'
         ]
       }
     }
+  }
+}
+
+// Policy assignment that denies network interface cards a public IP
+// The policy assignment is only deployed if the paramarter `enableDenyPublicIp` is set to true
+resource denyPublicIpNicAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = if(enableDenyPublicIp) {
+  name: '${baseName}-deny-public-ip'
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${policyIdentityId}': {}
+    }
+  }
+  properties: {
+    policyDefinitionId: network_interfaces_should_not_have_public_ips
   }
 }
 
