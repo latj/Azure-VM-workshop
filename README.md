@@ -1,5 +1,8 @@
 # Azure-VM-workshop
 
+## Overview
+![image](docs/overview.png)
+
 ## Prerequisites
 
 1. An Azure subscription with the [Owner](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#owner) role
