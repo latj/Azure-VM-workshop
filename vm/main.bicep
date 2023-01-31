@@ -52,7 +52,6 @@ resource subnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing 
 }
 
 //// Modules - Virtual Machines
-
 module linuxVmModule 'linux.bicep' = {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-linux-vm'
@@ -64,6 +63,11 @@ module linuxVmModule 'linux.bicep' = {
     adminUsername: adminUsername
     enableBackupTag: enableBackupTag
     customData: customData
+    diskEncryptionSettings: (enableDiskEncryption) ? {
+      vaultId: diskEncryptionKeyVaultModule.outputs.vaultId
+      vaultUri: diskEncryptionKeyVaultModule.outputs.vaultUri
+      keyUriWithVersion: diskEncryptionKeyVaultModule.outputs.keyUriWithVersion
+    } : {}
   }
 }
 
@@ -77,27 +81,21 @@ module windowsVmModule 'windows.bicep' = {
     adminPassword: adminPassword
     adminUsername: adminUsername
     enableBackupTag: enableBackupTag
+    diskEncryptionSettings: (enableDiskEncryption) ? {
+      vaultId: diskEncryptionKeyVaultModule.outputs.vaultId
+      vaultUri: diskEncryptionKeyVaultModule.outputs.vaultUri
+      keyUriWithVersion: diskEncryptionKeyVaultModule.outputs.keyUriWithVersion
+    } : {}
   }
 }
 
 //// Modules - Disk Encryption
-module diskEncryptionWindowsModule 'diskencryption.bicep' = if (enableDiskEncryption) {
+module diskEncryptionKeyVaultModule 'keyvault.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
-  name: '${deployment().name}-WindowsDiskEncryption'
+  name: '${deployment().name}-keyvaultDiskEncryption'
   params: {
     baseName: baseName
     location: location
-    vmName: windowsVmModule.outputs.vmName
-  }
-}
-
-module diskEncryptionLinuxModule 'diskencryption.bicep' = if (enableDiskEncryption) {
-  scope: resourceGroup(rg.name)
-  name: '${deployment().name}-LinuxDiskEncryption'
-  params: {
-    baseName: baseName
-    location: location
-    vmName: linuxVmModule.outputs.vmName
   }
 }
 
@@ -127,9 +125,7 @@ module vmInsightsLinuxModule 'vminsights.bicep' = if (enableVmInsights) {
   }
 }
 
-
-
 //// Outputs
-
-
-
+output resourceGroupName string = rg.name
+output linuxVmName string = linuxVmModule.outputs.vmName
+output windowsVmName string = windowsVmModule.outputs.vmName

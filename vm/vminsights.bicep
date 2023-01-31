@@ -21,6 +21,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' existing = {
 }
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  scope: resourceGroup('${baseName}-monitor-rg')
   name: logAnalyticsName
 }
 

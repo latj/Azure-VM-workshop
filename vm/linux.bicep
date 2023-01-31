@@ -18,13 +18,16 @@ param subnetId string
 @description('Custom Data to send to the VM')
 param customData string = ''
 
+@description('Settings for diskencryption. If empty diskencryption is not configured')
+param diskEncryptionSettings object = {}
+
 @description('Sets the value of the backup tag')
 param enableBackupTag bool
 
 var publisher = 'RedHat'
 var offer = 'RHEL'
 var OSVersion = '8_4'
-var vmSize = 'Standard_B2s'
+var vmSize = 'Standard_D2as_v5'
 var vmName = '${baseName}-linux-vm'
 var nicName = '${vmName}-nic'
 
@@ -90,8 +93,8 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-03-01' = {
   }
 }
 
-/* 
-resource DiskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = if(enableDiskEncryption) {
+ 
+resource diskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01' = if(!empty(diskEncryptionSettings)) {
   name: 'AzureDiskEncryption'
   parent: vm
   location: location
@@ -103,15 +106,15 @@ resource DiskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01
     forceUpdateTag: '1.0'
     settings: {
       EncryptionOperation: 'EnableEncryption'
-      KeyVaultURL: vault.properties.vaultUri
-      KeyVaultResourceId: vault.id
-      KekVaultResourceId: vault.id
-      KeyEncryptionKeyURL: key.properties.keyUriWithVersion
+      KeyVaultURL: diskEncryptionSettings.vaultUri
+      KeyVaultResourceId: diskEncryptionSettings.vaultId
+      KekVaultResourceId: diskEncryptionSettings.vaultId
+      KeyEncryptionKeyURL: diskEncryptionSettings.keyUriWithVersion
       VolumeType: 'All'
       ResizeOSDisk: false
     }
   }
 }
-*/
+
 /// OUTPUTS
 output vmName string = vm.name
