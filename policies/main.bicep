@@ -33,11 +33,6 @@ resource dcr 'Microsoft.Insights/dataCollectionRules@2021-09-01-preview' existin
   name: '${baseName}-default-dcr'
 }
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  scope: resourceGroup('${baseName}-monitor-rg')
-  name: '${baseName}-logs'
-}
-
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
   name: '${baseName}-policy-rg'
   location: location
@@ -74,7 +69,6 @@ module policyAssignments 'policyAssignments.bicep' = {
     location: location
     policyIdentityId: identity.outputs.identityId
     dcrId: (enableDataCollectionPolicy) ? dcr.id : ''
-    logAnalyticsId: logAnalytics.id
     enableBackupPolicy: enableBackupPolicy
     enableDataCollectionPolicy: enableDataCollectionPolicy
     enableDenyPublicIp: enableDenyPublicIp
