@@ -109,17 +109,84 @@ az deployment sub create --location "SwedenCentral" --name "vm" --template-file 
 
 The template deploys both a windows virtual machine (defined in `windows.bicep`) and a Linux virtual machine (defined in `linux.bicep`). The machines can be viewed through the Azure Portal.
 
-### 2.2 Enable Disk Encryption on the VMs
+### 2.2 Change the size of the VMs
 
-[Azure Disk Encryption for Windows Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. [Azure Disk Encryption for Linux virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview) uses the DM-Crypt feature of Linux to provide full disk encryption of the OS disk and data disks. Both solutions are integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
+The virtual machines are using a general purpose compute VM SKU from the [Dasv5-series](https://learn.microsoft.com/en-us/azure/virtual-machines/dasv5-dadsv5-series#dasv5-series).
+The exact size used is `Standard_D2as_v5`, which has 2 vCPU and 8 GiB RAM.
 
-By passing the parameter `-diskEncryption $true` to the deployment of the `main.bicep` file the content of `diskEncryption.bicep` is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a key in a key vault which will be used to encrypt the disks on the VM using  Azure Disk Encryption
+To update the vm size, open upp the file `linux.bicep` or `windows.bicep` and edit the variable `vmSize`. Set it for example to `Standard_D4as_v5`, which doubles the size to 4 vCPU and 16 GiB RAM
 
-```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
+```bicep
+var vmSize = 'Standard_D4as_v5'
 ```
 
-### 2.3 Enable VM Insights and Deploy a data collection rule
+```bash
+az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+```
+
+### 2.4 Expose the size of the VM's as a parameter
+
+It is sometimes beneficial to expose certain values from the templates as parameters. By doing that input values can be customized when calling the template, removing the need for editing files to change the value (for example the VM size). To expose the VM size as a parameter please do the following
+
+1. Replace variable `vmSize` with a parameter in `vm/linux.bicep` and/or `vm/windows.bicep`
+
+   ```bicep
+      var vmSize = 'Standard_D4as_v5'          // <- Remove This Line
+
+      @description('Sets the size of the VM')  // <- Add this line
+      param vmSize string                      // <- Add this line
+   ```
+
+2. The file `vm/main.bicep` is the one calling the other bicep modules inside the `vm` folder. This is the file that we are calling from the Azure CLI.
+
+   ```bicep
+      @description('Sets the size of the VM')  // <- Add this line
+      param vmSize string = 'Standard_D4as_v5' // <- Add this line
+   ```
+
+3. The file `vm/main.bicep` also need to pass the vm size to the `vm/linux.bicep` and/or `vm/windows.bicep` modules. Edit the params section of `linuxVmDeploy` and `windowsVmDeploy` to pass the VmSizeParameter
+
+   ```bicep
+      ...
+      params: {
+         ...
+         vmSize: vmSize
+         ...
+      }
+      ...
+   ```
+
+To redeploy the VM's with the default size, run the following command
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+```
+
+Now it is also possible to pass a virtual machine size to the CLI, try with a few different sizes and observe the result in the Azure portal
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json vmSize='Standard_D2as_v5'
+```
+
+### 2.4 Rename the VMs
+
+All resources deployed to Azure has a name. The virtual machines in this examples are called `contoso-linux-vm` and `contoso-windows-vm`. 
+
+If the name parameter is changed in the bicep template and then it is deployed, Azure will interpret that as a new resource that has not previously been deployed. It is not possible to *change* the name of an existing resource in Azure, instead it needs to be removed and a new resource with the new name can be deployed.
+
+To demonstrate this, edit the name of the virtual machines by changing the value of the variable `vmName` in either `vm/linux.bicep` or `vm/windows.bicep`
+
+Redeploy the VMs by the following command:
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
+```
+
+You will see in the portal that the virtual machines with the old names are still there, and that new ones with the new names have been created.
+
+**Change the names back to their original values** and also feel free to clean up the additional machines in the resource group as they will not be needed (always good to free up some resources)
+
+### 2.2 Enable VM Insights and Deploy a data collection rule
 
 [VM insights](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-overview) monitors the performance and health of virtual machines. It can be accessed in the portal by navigating to the Virtual Machine and then selecting "Insights" from the "Monitoring" Section in the left pane.
 
@@ -139,9 +206,19 @@ az deployment sub create --location "SwedenCentral" --name "vmWithDcr" --templat
 
 Once the new virtual machines have been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It should now contain data.
 
+### 2.3 Enable Disk Encryption on the VMs
+
+[Azure Disk Encryption for Windows Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. [Azure Disk Encryption for Linux virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview) uses the DM-Crypt feature of Linux to provide full disk encryption of the OS disk and data disks. Both solutions are integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
+
+By passing the parameter `-diskEncryption $true` to the deployment of the `main.bicep` file the content of `diskEncryption.bicep` is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a key in a key vault which will be used to encrypt the disks on the VM using  Azure Disk Encryption
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
+```
+
 ## Challenge 3: Manage virtual machines at scale using Azure Policy
 
-In step 2.3 the data collection rule was created and attached to the VMs by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
+In step 2.2 the data collection rule was created and attached to the VMs by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
 
 There is a rich set of [built in policy definitions](https://learn.microsoft.com/en-us/azure/governance/policy/samples/built-in-policies) in Azure that can be used out of the box. There is also the possibility to define custom policies tailored to specific needs.
 
