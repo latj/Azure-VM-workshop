@@ -81,7 +81,7 @@ module windowsVmModule 'windows.bicep' = {
 }
 
 //// Modules - Disk Encryption
-module diskEncryptionWindowsModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
+module diskEncryptionWindowsModule 'diskencryption.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-WindowsDiskEncryption'
   params: {
@@ -91,7 +91,7 @@ module diskEncryptionWindowsModule 'diskEncryption.bicep' = if (enableDiskEncryp
   }
 }
 
-module diskEncryptionLinuxModule 'diskEncryption.bicep' = if (enableDiskEncryption) {
+module diskEncryptionLinuxModule 'diskencryption.bicep' = if (enableDiskEncryption) {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-LinuxDiskEncryption'
   params: {
@@ -103,7 +103,7 @@ module diskEncryptionLinuxModule 'diskEncryption.bicep' = if (enableDiskEncrypti
 
 //// Modules - VM Insights
 
-module vmInsightsWindowsModule 'vmInsights.bicep' = if (enableVmInsights) {
+module vmInsightsWindowsModule 'vminsights.bicep' = if (enableVmInsights) {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-WindowsVmInsights'
   params: {
@@ -115,7 +115,7 @@ module vmInsightsWindowsModule 'vmInsights.bicep' = if (enableVmInsights) {
   }
 }
 
-module vmInsightsLinuxModule 'vmInsights.bicep' = if (enableVmInsights) {
+module vmInsightsLinuxModule 'vminsights.bicep' = if (enableVmInsights) {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-LinuxVmInsights'
   params: {
