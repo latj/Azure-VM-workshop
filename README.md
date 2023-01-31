@@ -224,6 +224,8 @@ There is a rich set of [built in policy definitions](https://learn.microsoft.com
 
 ### 3.1 Enable VM Insights using custom Azure policies (deployIfNotExists)
 
+A policy with a [deployIfNotExists effect](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/effects#deployifnotexists) is a policy that can run an additional deployment after the resource manager have created or updated a resource.
+
 In this example we will be using a set of custom policies defined in `policies/customPolicies.bicep`. The policies deploys the Azure monitoring agent extension as well as configures a data collection rule. To enable the policy on the subscription run the following command
 
 ```bash
@@ -248,7 +250,7 @@ Once the new virtual machine has been created, navigate to it in the Azure porta
 
 ### 3.2 Add a policy that blocks deployments of public IP-addresses (Deny)
 
-A deny-policy is a policy that disallows certain actions or resources by blocking them. A common example is to deny assignment of public IP addresses directly to virtual machines. By assigning the policy called `Network interfaces should not have public IPs` to the subscription (or the resource group containing the virtual machines) it will not be possible to assign a public IP to the NIC on the virtual machine.
+A policy with a [deny effect](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/effects#deny) is a policy that disallows certain actions or resources by blocking them. A common example is to deny assignment of public IP addresses directly to virtual machines. By assigning the policy called `Network interfaces should not have public IPs` to the subscription (or the resource group containing the virtual machines) it will not be possible to assign a public IP to the NIC on the virtual machine.
 
 #### Option 1: Assign the policy from the Azure portal
 
@@ -294,9 +296,52 @@ az network public-ip delete --name "test-pip" --resource-group "contoso-vm-rg"
 
 ### 3.3 Add a policy that automatically append tags to deployed resources (Append)
 
+A policy with an [append effect](https://learn.microsoft.com/en-us/azure/governance/policy/concepts/effects#append) can add new fields to a resource before the deployment occurs.
+
+A common use case is to automatically append a tag to all resources. This can be used to automatically add an `environment` or `cost-center` tag for all resources deployed in a subscription. There is a built in policy called [Append a tag and its value to resources](https://portal.azure.com/#view/Microsoft_Azure_Policy/PolicyDetailBlade/definitionId/%2Fproviders%2FMicrosoft.Authorization%2FpolicyDefinitions%2F2a0e14a6-b0a6-4fab-991a-187a4f81c498)
+
+Add the below bicep snippet to `policies/policyAssignments` to configure deployment of the policy on the current subscription. Please feel free to edit the `TAGNAME` and `TAGVALUE`.
+
+```bicep
+resource tagAppendAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = {
+  name: '${baseName}-configure-tagAppend'
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${policyIdentityId}': {}
+    }
+  }
+  properties: {
+    policyDefinitionId: tenantResourceId('Microsoft.Authorization/policyDefinitions', '2a0e14a6-b0a6-4fab-991a-187a4f81c498')
+    parameters: {
+      tagName: {
+        value: 'TAGNAME'
+      }
+      tagValue: {
+        value: 'TAGVALUE'
+      }
+    }
+  }
+}
+```
+
+To deploy the policy, run the following command:
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "policy" --template-file policies/main.bicep --parameters @policies/main.parameters.json
+```
+
+The policy will apply to all resources created in the future, as well as all future updates to resource. However existing resources are unaffected (until they are updated). To see the policy in action perform an update on one of the existing virtual machines, for example through
+
+- Changing the vm size as described in section 2.3-2.4
+- Edit the tags through the portal
+
+After you have done any change or update to the VM you will see that it has the new tag assigned
+
 ### 3.4 Enable Microsoft Defender for cloud through built in policy (deployIfNotExists)
 
-### 3.2 Enable Azure backup using a built in Azure policy
+### 3.5 Enable Azure backup using a built in Azure policy
 
 Also [Azure backup](https://learn.microsoft.com/en-us/azure/backup/backup-overview) can be enabled using Azure policy
 
