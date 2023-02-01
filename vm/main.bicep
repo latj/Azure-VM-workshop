@@ -132,7 +132,7 @@ module customscript 'extension.bicep' = if (runcustomscript) {
   scope: resourceGroup(rg.name)
   name: '${deployment().name}-CustomScript'
   params: {
-    vmserver: windowsVmModule.name
+    vmserver: windowsVmModule.outputs.vmName
   }
 }
 
