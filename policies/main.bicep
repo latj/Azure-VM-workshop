@@ -39,7 +39,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(baseName, 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  name: guid(baseName, identity.name, subscription().id, 'b24988ac-6180-42a0-ab88-20f7382dd24c')
   properties: {
     principalId: identity.outputs.identityPrincipalId
     principalType: 'ServicePrincipal'
