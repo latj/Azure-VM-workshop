@@ -127,7 +127,7 @@ var vmSize = 'Standard_D4as_v5'
 az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
-### 2.4 Expose the size of the VM's as a parameter
+### 2.3 Expose the size of the VM's as a parameter
 
 It is sometimes beneficial to expose certain values from the templates as parameters. By doing that input values can be customized when calling the template, removing the need for editing files to change the value (for example the VM size). To expose the VM size as a parameter please do the following
 
@@ -189,7 +189,7 @@ You will see in the portal that the virtual machines with the old names are stil
 
 **Change the names back to their original values** and also feel free to clean up the additional machines in the resource group as they will not be needed (always good to free up some resources)
 
-### 2.2 Enable VM Insights and Deploy a data collection rule
+### 2.5 Enable VM Insights and Deploy a data collection rule
 
 [VM insights](https://learn.microsoft.com/en-us/azure/azure-monitor/vm/vminsights-overview) monitors the performance and health of virtual machines. It can be accessed in the portal by navigating to the Virtual Machine and then selecting "Insights" from the "Monitoring" Section in the left pane.
 
@@ -209,7 +209,7 @@ az deployment sub create --location "SwedenCentral" --name "vmWithDcr" --templat
 
 Once the new virtual machines have been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It should now contain data.
 
-### 2.3 Enable Disk Encryption on the VMs
+### 2.6 Enable Disk Encryption on the VMs
 
 [Azure Disk Encryption for Windows Virtual Machines](https://learn.microsoft.com/en-us/azure/virtual-machines/extensions/azure-disk-enc-windows) uses BitLocker to provide full disk encryption on Azure virtual machines running Windows. [Azure Disk Encryption for Linux virtual machines](https://learn.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview) uses the DM-Crypt feature of Linux to provide full disk encryption of the OS disk and data disks. Both solutions are integrated with [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/overview) to manage disk encryption keys and secrets.
 
@@ -221,7 +221,7 @@ az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption
 
 ## Challenge 3: Manage virtual machines at scale using Azure Policy
 
-In step 2.2 the data collection rule was created and attached to the VMs by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
+In step 2.5 the data collection rule was created and attached to the VMs by modifying the bicep template. While this works and is a valid approach it can become error prone to require everyone that deploys virtual machines to configure data collection rules correctly. Instead the rules can be applied automatically by [Azure policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) to ensure that the same set of basic telemetry data is collected from all VM's deployed in a subscription.
 
 There is a rich set of [built in policy definitions](https://learn.microsoft.com/en-us/azure/governance/policy/samples/built-in-policies) in Azure that can be used out of the box. There is also the possibility to define custom policies tailored to specific needs.
 
