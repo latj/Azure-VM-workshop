@@ -78,17 +78,7 @@ To view and edit the files you can use your favorite editor. If you are running 
 
 This goal of the first challenge is to deploy supporting infrastructure for virtual machines, such as networks and monitoring resources.
 
-### 1.1 Deploy Network
-
-Before any virtual machines can be deployed there needs to be a network to deploy them into. The folder [network/](network/) contains a set of bicep templates that deploy a simple network and an [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-overview) host that can be used to access the machines.
-
-The network can be deployed using the following command
-
-```bash
-az deployment sub create --location "SwedenCentral" --name "network" --template-file network/main.bicep --parameters @network/main.parameters.json
-```
-
-### 1.2 Deploy Monitoring Capabilities
+### 1.1 Deploy Monitoring Capabilities
 
 To collect telemetry data from virtual machines a [Log analytics workspace](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/log-analytics-workspace-overview) and [data collection rules](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/data-collection-rule-overview) are needed. In this lab series we will deploy a central log analytics workspace which multiple virtual machines can use to send their logs to.
 
@@ -96,6 +86,16 @@ The folder [monitoring/](monitoring/) contains a set of bicep templates that dep
 
 ```bash
 az deployment sub create --location "SwedenCentral" --name "monitor" --template-file monitor/main.bicep --parameters @monitor/main.parameters.json
+```
+
+### 1.2 Deploy Network
+
+Before any virtual machines can be deployed there needs to be a network to deploy them into. The folder [network/](network/) contains a set of bicep templates that deploy a simple network and an [Azure Bastion](https://learn.microsoft.com/en-us/azure/bastion/bastion-overview) host that can be used to access the machines.
+
+The network can be deployed using the following command
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "network" --template-file network/main.bicep --parameters @network/main.parameters.json
 ```
 
 ## Challenge 2: Deploy VMs with different settings using Bicep
