@@ -391,8 +391,16 @@ az deployment sub create --location "SwedenCentral" --name "vmWithInit" --templa
 
 Connect to the VM through bastion and verify the contents of `/tmp/cloudInit.txt` (which should have been created by cloud init on the first boot)
 
-### 4.2 Windows: TODO
-// TODO
+### 4.2 Windows: CustomScriptExtension
+To run script on Windows machine, CustomScript can be used. This simple example will create simple textfile in c:\temp
+To update the vm size, open upp the file `windows.bicep` and edit the parameter `runcustomscript` to true. 
+
+```bicep
+param runcustomscript bool = false
+```
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ## Clean Up
 
 1. Remove all resource groups created

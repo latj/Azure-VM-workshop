@@ -27,6 +27,9 @@ param enableBackupTag bool = false
 @description('Sets to true to enable VM Insights')
 param enableVmInsights bool = false
 
+@description('Run CustomScript extension')
+param runcustomscript bool = false
+
 @description('Password for the Virtual Machine.')
 @minLength(12)
 @secure()
@@ -122,6 +125,14 @@ module vmInsightsLinuxModule 'vminsights.bicep' = if (enableVmInsights) {
     vmName: linuxVmModule.outputs.vmName
     logAnalyticsName: '${baseName}-logs'
     isLinux: true
+  }
+}
+
+module customscript 'extension.bicep' = if (runcustomscript) {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-CustomScript'
+  params: {
+    vmserver: windowsVmModule.name
   }
 }
 
