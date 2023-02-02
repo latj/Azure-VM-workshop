@@ -219,16 +219,34 @@ By passing the parameter `-diskEncryption $true` to the deployment of the `main.
 az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
 ```
 ### 2.7 Generate name for your machine
-There is several ways on how you can generate a name and how it will work with your organizations name standard. In this excercise, a Azure Function is used to generate a name for either Windows or Linux machines and store them to a table storage. 
-First you will to run the script Get-Names.ps1 , try tabing forward the values for each parameter
-'''bash
-.\Get-Name.ps1 -OS linux -GenerateOrList Generate
-```
-To list names and there properties, try the following
-'''bash
-.\Get-Name.ps1 -OS linux -GenerateOrList List
-```
+There is several ways on how you can generate a name and how it will work with your organizations name standard. In this exercise, a Azure Function is used to generate a name for either Windows or Linux machines and store them to a table storage.
+
 After you generated a name, try to figure out how to modify the vm templates and deploy a vm with your generated name.
+#### Generate names through Powershell
+
+First you will to run the script Get-Names.ps1 , try tabbing forward the values for each parameter
+
+```powershell
+.\Get-Name.ps1 -OS windows -GenerateOrList Generate
+```
+
+To list names and there properties, try the following
+
+```powershell
+.\Get-Name.ps1 -OS windows -GenerateOrList List
+```
+
+#### Generate names through Bash
+
+```bash
+./getname.sh --linux
+```
+
+To list names and there properties, try the following
+
+```bash
+./getname.sh --linux --generate
+```
 
 ## Challenge 3: Manage virtual machines at scale using Azure Policy
 
