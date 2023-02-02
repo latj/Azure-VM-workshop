@@ -227,13 +227,14 @@ After you generated a name, try to figure out how to modify the vm templates and
 First you will to run the script Get-Names.ps1 , try tabbing forward the values for each parameter
 
 ```powershell
-.\Get-Name.ps1 -OS windows -GenerateOrList Generate
+pwsh -C ".\Scripts\Get-Name.ps1 -OS windows -GenerateOrList Generate"
+
 ```
 
 To list names and there properties, try the following
 
 ```powershell
-.\Get-Name.ps1 -OS windows -GenerateOrList List
+pwsh -C " .\Scripts\Get-Name.ps1 -OS windows -GenerateOrList List"
 ```
 
 #### Generate names through Bash
@@ -241,13 +242,13 @@ To list names and there properties, try the following
 To generate a new name please use the following command
 
 ```bash
-./getname.sh --linux --generate
+bash Scripts/getnames.sh --linux --generate
 ```
 
 To list names and there properties, try the following
 
 ```bash
-./getname.sh --linux 
+bash Scripts/getnames.sh --linux 
 ```
 
 ## Challenge 3: Manage virtual machines at scale using Azure Policy

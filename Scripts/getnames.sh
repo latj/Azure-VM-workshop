@@ -50,9 +50,9 @@ RESOURCEGROUP=${RESOURCEGROUP:-"test"}
 COSTCENTER=${COSTCENTER:-"noway"}
 
 if [ -z ${GENERATE+x} ]; then 
-    curl 'https://generatehostnamedemo.azurewebsites.net/api/Listhostnames?code=UaCqmEHNDe0jYLfEL-xI2UZy06Au24sx8Yt8L_aYEc-eAzFuC67iiA==&type='$OS | jq -r '.hostnames[][].name'
+    curl -s 'https://generatehostnamedemo.azurewebsites.net/api/Listhostnames?code=UaCqmEHNDe0jYLfEL-xI2UZy06Au24sx8Yt8L_aYEc-eAzFuC67iiA==&type='$OS | jq -r '.hostnames[][].name'
 else 
-    curl -X POST -H "Content-Type: application/json" \
+    curl -s -X POST -H "Content-Type: application/json" \
       -d "{'type': '$OS', 'createdby': '$CREATEDBY', 'resourcegroup': '$RESOURCEGROUP', 'costcenter': '$COSTCENTER', GENERATE: 'true'}" \
       "https://generatehostnamedemo.azurewebsites.net/api/Gethostname?code=FD7Xdx777b3iObR31DMWoWJEzXwmy1zmNA_gG9rJb_ftAzFuwdHCNg==" | jq -r '.hostnames[].name'
 fi
