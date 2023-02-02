@@ -238,14 +238,16 @@ To list names and there properties, try the following
 
 #### Generate names through Bash
 
+To generate a new name please use the following command
+
 ```bash
-./getname.sh --linux
+./getname.sh --linux --generate
 ```
 
 To list names and there properties, try the following
 
 ```bash
-./getname.sh --linux --generate
+./getname.sh --linux 
 ```
 
 ## Challenge 3: Manage virtual machines at scale using Azure Policy
