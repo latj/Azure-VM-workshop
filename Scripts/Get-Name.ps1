@@ -20,5 +20,5 @@ if($GenerateOrList -eq "Generate"){
 if($GenerateOrList -eq "List"){
     $result = Invoke-WebRequest -Uri "https://generatehostnamedemo.azurewebsites.net/api/Listhostnames?code=UaCqmEHNDe0jYLfEL-xI2UZy06Au24sx8Yt8L_aYEc-eAzFuC67iiA==&type=$os" -Method Get
     $name = $result.Content | ConvertFrom-Json 
-    $name.hostnames
+    $name.hostnames | FT
 }
