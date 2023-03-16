@@ -445,7 +445,19 @@ az deployment sub create --location "SwedenCentral" --name "vmWithSecurityBaseli
 ### 4.4 Machine configuration: Enable AzureSecurityBaseline at scale
 Machine configuration, supports both Aduit and DeployIfNotExist with Azure Policy. But only Audit is supported for AzureSecurityBaseline. The recommeded way to do this is to use [Azure Automange Best Practies](https://learn.microsoft.com/en-us/azure/automanage/overview-about) custom profiles, to configure AzureSecurityBaseline on the VMs. Then we can assign the VMs to that custom profile through Azure policy.
 
-Create the Automange Best Preatices custom profile,  
+Note: that Automanage Best Practies custom profile, is not supported in SwedenCentral, jet.
+
+Create the Automange Best Preatices custom profile and assign the built-in policy on the subscription run the following command:
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "policyWithSecurityBaseline" --template-file policies/main.bicep --parameters @policies/main.parameters.json security='true'
+```
+
+To test deply the VMs again, with the following command:
+```bash
+az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
+```
+
 ## Clean Up
 
 1. Remove all resource groups created
