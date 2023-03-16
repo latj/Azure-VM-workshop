@@ -21,6 +21,9 @@ param customData string = ''
 @description('Settings for diskencryption. If empty diskencryption is not configured')
 param diskEncryptionSettings object = {}
 
+@description('Settings for enableing Azure Security Baseline')
+param securityBaseline bool 
+
 @description('Sets the value of the backup tag')
 param enableBackupTag bool
 
@@ -115,6 +118,34 @@ resource diskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01
     }
   }
 }
+
+
+resource guestConfigExtension 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if(securityBaseline) {
+  parent: vm
+  name: 'AzurePolicyforLinux'
+  location: location
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+  }
+}
+
+resource configuration 'Microsoft.GuestConfiguration/guestConfigurationAssignments@2020-06-25' = if(securityBaseline) {
+  name: 'AzureLinuxBaseline'
+  scope: vm
+  location: location
+  properties: {
+    guestConfiguration: {
+      assignmentType: 'ApplyAndMonitor'
+      name: 'AzureLinuxBaseline'
+      version: '1.*'
+    }
+  }
+}
+
 
 /// OUTPUTS
 output vmName string = vm.name

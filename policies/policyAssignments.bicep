@@ -24,10 +24,14 @@ param enableDataCollectionPolicy bool = false
 @description('Set to true to deny public IP adresses on network interface cards')
 param enableDenyPublicIp bool = false
 
+@description('Settings for enableing Azure Security Baseline')
+param securityBaseline bool = false
+
 param winAmaPolicyId string
 param winDcrPolicyId string
 param linuxAmaPolicyId string
 param linuxDcrPolicyId string
+param outputCustomProfile string
 
 //// Variables
 //var deploy_log_analytics_extension_for_linux_vms = tenantResourceId('Microsoft.Authorization/policyDefinitions', '053d3325-282c-4e5c-b944-24faffd30d77')
@@ -38,7 +42,7 @@ param linuxDcrPolicyId string
 //var configure_linux_virtual_machines_to_be_associated_with_a_data_collection_rule_or_a_data_collection_endpoint = tenantResourceId('Microsoft.Authorization/policyDefinitions', '58e891b9-ce13-4ac3-86e4-ac3e1f20cb07')
 
 var network_interfaces_should_not_have_public_ips = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83a86a26-fd1f-447c-b59d-e51f44264114')
-
+var configure_virtual_machines_to_be_onboarded_to_azure_automanage_with_custom_configuration_profile = tenantResourceId('Microsoft.Authorization/policyDefinitions', 'b025cfb4-3702-47c2-9110-87fe0cfcc99b')
 var configure_backup_on_virtual_machines_with_a_given_tag_to_a_new_recovery_services_vault_with_a_default_policy = tenantResourceId('Microsoft.Authorization/policyDefinitions', '83644c87-93dd-49fe-bf9f-6aff8fd0834e')
 //// Resources
 
@@ -158,6 +162,28 @@ resource denyPublicIpNicAssignment 'Microsoft.Authorization/policyAssignments@20
     policyDefinitionId: network_interfaces_should_not_have_public_ips
   }
 }
+
+// Policy assignment that assign VM to Automanage BP Custom Profile
+// The policy assignment is only deployed if the paramarter `securityBaseline` is set to true
+resource AssignSecurityBaseline 'Microsoft.Authorization/policyAssignments@2022-06-01' = if(securityBaseline) {
+  name: '${baseName}-automanage-custom-profile'
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${policyIdentityId}': {}
+    }
+  }
+  properties: {
+    policyDefinitionId: configure_virtual_machines_to_be_onboarded_to_azure_automanage_with_custom_configuration_profile
+    parameters: {
+      configurationProfile: {
+        value: outputCustomProfile
+      }
+    }
+  }
+}
+
 
 /* 
 resource guestConfigurationPrerequisitesAssignment 'Microsoft.Authorization/policyAssignments@2022-06-01' = {

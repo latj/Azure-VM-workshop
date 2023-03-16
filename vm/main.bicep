@@ -27,6 +27,9 @@ param enableBackupTag bool = false
 @description('Sets to true to enable VM Insights')
 param enableVmInsights bool = false
 
+@description('Settings for enableing Azure Security Baseline')
+param securityBaseline bool = false
+
 @description('Run CustomScript extension')
 param runcustomscript bool = false
 
@@ -65,6 +68,7 @@ module linuxVmModule 'linux.bicep' = {
     adminPassword: adminPassword
     adminUsername: adminUsername
     enableBackupTag: enableBackupTag
+    securityBaseline: securityBaseline
     customData: customData
     diskEncryptionSettings: (enableDiskEncryption) ? {
       vaultId: diskEncryptionKeyVaultModule.outputs.vaultId
@@ -84,6 +88,7 @@ module windowsVmModule 'windows.bicep' = {
     adminPassword: adminPassword
     adminUsername: adminUsername
     enableBackupTag: enableBackupTag
+    securityBaseline: securityBaseline
     diskEncryptionSettings: (enableDiskEncryption) ? {
       vaultId: diskEncryptionKeyVaultModule.outputs.vaultId
       vaultUri: diskEncryptionKeyVaultModule.outputs.vaultUri

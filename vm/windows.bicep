@@ -18,6 +18,9 @@ param subnetId string
 @description('Settings for diskencryption. If empty diskencryption is not configured')
 param diskEncryptionSettings object = {}
 
+@description('Settings for enableing Azure Security Baseline')
+param securityBaseline bool 
+
 @description('Sets the value of the backup tag')
 param enableBackupTag bool
 
@@ -115,6 +118,34 @@ resource diskEncryption 'Microsoft.Compute/virtualMachines/extensions@2020-06-01
     }
   }
 }
+
+
+resource guestConfigExtension 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if(securityBaseline) {
+  parent: vm
+  name: 'AzurePolicyforWindows'
+  location: location
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforWindows'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+  }
+}
+
+resource configuration 'Microsoft.GuestConfiguration/guestConfigurationAssignments@2020-06-25' = if(securityBaseline) {
+  name: 'AzureWindowsBaseline'
+  scope: vm
+  location: location
+  properties: {
+    guestConfiguration: {
+      assignmentType: 'ApplyAndMonitor'
+      name: 'AzureWindowsBaseline'
+      version: '1.*'
+    }
+  }
+}
+
 
 /// OUTPUTS
 output vmName string = vm.name

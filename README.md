@@ -434,7 +434,18 @@ param runcustomscript bool = false
 ```bash
 az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
+### 4.3 Machine configuration: Enable AzureSecurityBaseline on the VMs
+[Machine configuration feature of Azure Automanage](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/overview) also named "Guest Configuration" provides native capability to audit or configure operating system settings as code, both Azure VMs and Arc-enabled machines. Machine configuration as different assinment types, they are Audit, ApplyAndMonitor and ApplyAndAutoCorrect, in the sample below ApplyAndMonitor is used, more info [Remediation options for machine configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-policy-effects)
 
+By passing the parameter `-securityBaseline $true` to the deployment of the `main.bicep` this feature is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a Guest Assignment resource and assosiate the VM to it
+
+```bash
+az deployment sub create --location "SwedenCentral" --name "vmWithSecurityBaseline" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters securityBaseline='true'
+```
+### 4.4 Machine configuration: Enable AzureSecurityBaseline at scale
+Machine configuration, supports both Aduit and DeployIfNotExist with Azure Policy. But only Audit is supported for AzureSecurityBaseline. The recommeded way to do this is to use [Azure Automange Best Practies](https://learn.microsoft.com/en-us/azure/automanage/overview-about) custom profiles, to configure AzureSecurityBaseline on the VMs. Then we can assign the VMs to that custom profile through Azure policy.
+
+Create the Automange Best Preatices custom profile,  
 ## Clean Up
 
 1. Remove all resource groups created

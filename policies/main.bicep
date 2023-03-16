@@ -23,6 +23,13 @@ param enableDataCollectionPolicy bool = false
 @description('Set to true to deny public IP adresses on network interface cards')
 param enableDenyPublicIp bool = false
 
+@description('Settings for enableing Azure Security Baseline')
+param securityBaseline bool = false
+
+@description('Settings for Assignmentstype with Azure Security Baseline')
+param azureSecurityBaselineAssignmentType string = 'ApplyAndMonitor'
+
+
 //// Variables
 var contributorRoleDefinitonId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
 
@@ -76,7 +83,22 @@ module policyAssignments 'policyAssignments.bicep' = {
     winDcrPolicyId: customPolicies.outputs.winDcrId
     linuxAmaPolicyId: customPolicies.outputs.linuxAmaId
     linuxDcrPolicyId: customPolicies.outputs.linuxDcrId
+    securityBaseline: securityBaseline
+    outputCustomProfile: customProfile.outputs.outputCustomProfile
   }
 }
 
+module customProfile 'customProfile.bicep' = if(securityBaseline) {
+  scope: resourceGroup(rg.name)
+  name: '${deployment().name}-customprofile'
+  params: {
+    name: '${baseName}-customprofile'
+    location: location
+    azureSecurityBaselineAssignmentType: azureSecurityBaselineAssignmentType
+  }
+  
+}
+
+
 //// Outputs
+
