@@ -6,7 +6,7 @@
             "value": "contoso"
         },
         "location": {
-            "value": "SwedenCentral"
+            "value": "NorthEurope"
         },
         "azureVNetAddressPrefix": {
             "value": "10.0.0.0/23"

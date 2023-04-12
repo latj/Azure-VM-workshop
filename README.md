@@ -85,7 +85,7 @@ To collect telemetry data from virtual machines a [Log analytics workspace](http
 The folder [monitoring/](monitoring/) contains a set of bicep templates that deploys a log analytics workspace along with a few example data collection rules. They can be deployed using the following command:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "monitor" --template-file monitor/main.bicep --parameters @monitor/main.parameters.json
+az deployment sub create --location "NorthEurope" --name "monitor" --template-file monitor/main.bicep --parameters @monitor/main.parameters.json
 ```
 
 ### 1.2 Deploy Network
@@ -95,7 +95,7 @@ Before any virtual machines can be deployed there needs to be a network to deplo
 The network can be deployed using the following command
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "network" --template-file network/main.bicep --parameters @network/main.parameters.json
+az deployment sub create --location "NorthEurope" --name "network" --template-file network/main.bicep --parameters @network/main.parameters.json
 ```
 
 ## Challenge 2: Deploy VMs with different settings using Bicep
@@ -107,7 +107,7 @@ The folder [vm/](vm/) contains templates to deploy and configure [virtual machin
 The first step is to deploy a plain virtual machine. To create a virtual machine with an [OS disk](https://learn.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview) and a [network interface card](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-network-interface?tabs=network-interface-portal) connected to the previously created network please use the below command
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+az deployment sub create --location "NorthEurope" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
 The template deploys both a windows virtual machine (defined in `windows.bicep`) and a Linux virtual machine (defined in `linux.bicep`). The machines can be viewed through the Azure Portal.
@@ -124,7 +124,7 @@ var vmSize = 'Standard_D4as_v5'
 ```
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+az deployment sub create --location "NorthEurope" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
 ### 2.3 Expose the size of the VM's as a parameter
@@ -162,13 +162,13 @@ It is sometimes beneficial to expose certain values from the templates as parame
 To redeploy the VM's with the default size, run the following command
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+az deployment sub create --location "NorthEurope" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 
 Now it is also possible to pass a virtual machine size to the CLI, try with a few different sizes and observe the result in the Azure portal
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json vmSize='Standard_D2as_v5'
+az deployment sub create --location "NorthEurope" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json vmSize='Standard_D2as_v5'
 ```
 
 ### 2.4 Rename the VMs
@@ -182,7 +182,7 @@ To demonstrate this, edit the name of the virtual machines by changing the value
 Redeploy the VMs by the following command:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
+az deployment sub create --location "NorthEurope" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
 ```
 
 You will see in the portal that the virtual machines with the old names are still there, and that new ones with the new names have been created.
@@ -204,7 +204,7 @@ To enable VM Insights a few actions must be taken:
 The below command will enable the [vm/vmInsights.bicep](vm/vmInsights.bicep) module in the deployment:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithDcr" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableVmInsights='true'
+az deployment sub create --location "NorthEurope" --name "vmWithDcr" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableVmInsights='true'
 ```
 
 Once the new virtual machines have been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It should now contain data.
@@ -216,7 +216,7 @@ Once the new virtual machines have been created, navigate to it in the Azure por
 By passing the parameter `-diskEncryption $true` to the deployment of the `main.bicep` file the content of `diskEncryption.bicep` is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a key in a key vault which will be used to encrypt the disks on the VM using  Azure Disk Encryption
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
+az deployment sub create --location "NorthEurope" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters enableDiskEncryption='true'
 ```
 ### 2.7 Generate name for your machine
 There is several ways on how you can generate a name and how it will work with your organizations name standard. In this exercise, a Azure Function is used to generate a name for either Windows or Linux machines and store them to a table storage.
@@ -264,7 +264,7 @@ A policy with a [deployIfNotExists effect](https://learn.microsoft.com/en-us/azu
 In this example we will be using a set of custom policies defined in `policies/customPolicies.bicep`. The policies deploys the Azure monitoring agent extension as well as configures a data collection rule. To enable the policy on the subscription run the following command
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "policyWithDataCollectionRule" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDataCollectionPolicy='true'
+az deployment sub create --location "NorthEurope" --name "policyWithDataCollectionRule" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDataCollectionPolicy='true'
 ```
 
 As we previously deployed and configured  virtual machines with VM Insights enabled, let's remove those virtual machines and redeploy without VM Insights. This should trigger the policy to add VM-Insights
@@ -278,7 +278,7 @@ az group delete --name contoso-vm-rg
 to redeploy the machine, please run
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableDiskEncryption='true'
+az deployment sub create --location "NorthEurope" --name "vmWithDiskEncryption" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableDiskEncryption='true'
 ```
 
 Once the new virtual machine has been created, navigate to it in the Azure portal and select "Insights" from the "Monitoring" Section in the left pane. It will say that Insights is not yet configured. In a few minutes when the policy has executed it should be automatically configured and display data
@@ -304,7 +304,7 @@ The policy could of course be deployed using a bicep template as well.
 The below command deploys the policy assignment:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "policyWithDenyPublicIp" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDenyPublicIp='true'
+az deployment sub create --location "NorthEurope" --name "policyWithDenyPublicIp" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableDenyPublicIp='true'
 ```
 
 #### Try to create a public ip and assign it to a VM
@@ -364,7 +364,7 @@ resource tagAppendAssignment 'Microsoft.Authorization/policyAssignments@2022-06-
 To deploy the policy, run the following command:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "policy" --template-file policies/main.bicep --parameters @policies/main.parameters.json
+az deployment sub create --location "NorthEurope" --name "policy" --template-file policies/main.bicep --parameters @policies/main.parameters.json
 ```
 
 The policy will apply to all resources created in the future, as well as all future updates to resource. However existing resources are unaffected (until they are updated). To see the policy in action perform an update on one of the existing virtual machines, for example through
@@ -383,13 +383,13 @@ Also [Azure backup](https://learn.microsoft.com/en-us/azure/backup/backup-overvi
 To enable the built in policy for backups on the subscription run the following command:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "policyWithBackup" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableBackupPolicy='true'
+az deployment sub create --location "NorthEurope" --name "policyWithBackup" --template-file policies/main.bicep --parameters @policies/main.parameters.json enableBackupPolicy='true'
 ```
 
 The backup policy is configured to target all virtual machines with the tag `backup` set to `yes`. The tag value can be set to yes either through the portal or by re-running the deployment of the VM with the tag `enableBackupTag` set to true:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithBackupTag" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableBackupTag='true'
+az deployment sub create --location "NorthEurope" --name "vmWithBackupTag" --template-file vm/main.bicep --parameters @vm/main.parameters.json enableBackupTag='true'
 ```
 
 Once the policy runs it will create a new [Service Recovery Vault](https://learn.microsoft.com/en-us/azure/backup/backup-azure-recovery-services-vault-overview) in the same resource group as the virtual machine and configure a daily backup of the machine to the vault
@@ -418,7 +418,7 @@ az group delete --name contoso-vm-rg
 **Deploy the virtual machines feeding the vm/setup.sh into cloud-init**
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithInit" --template-file vm/main.bicep --parameters @vm/main.parameters.json customData=@vm/setup.sh
+az deployment sub create --location "NorthEurope" --name "vmWithInit" --template-file vm/main.bicep --parameters @vm/main.parameters.json customData=@vm/setup.sh
 ```
 
 Connect to the VM through bastion and verify the contents of `/tmp/cloudInit.txt` (which should have been created by cloud init on the first boot)
@@ -432,7 +432,7 @@ param runcustomscript bool = false
 ```
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
+az deployment sub create --location "NorthEurope" --name "vmWithLargerSize" --template-file vm/main.bicep --parameters @vm/main.parameters.json 
 ```
 ### 4.3 Machine configuration: Enable AzureSecurityBaseline on the VMs
 [Machine configuration feature of Azure Automanage](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/overview) also named "Guest Configuration" provides native capability to audit or configure operating system settings as code, both Azure VMs and Arc-enabled machines. Machine configuration as different assinment types, they are Audit, ApplyAndMonitor and ApplyAndAutoCorrect, in the sample below ApplyAndMonitor is used, more info [Remediation options for machine configuration](https://learn.microsoft.com/en-us/azure/governance/machine-configuration/machine-configuration-policy-effects)
@@ -440,7 +440,7 @@ az deployment sub create --location "SwedenCentral" --name "vmWithLargerSize" --
 By passing the parameter `-securityBaseline $true` to the deployment of the `main.bicep` this feature is deployed in addition to what is inside the `linux.bicep` and `windows.bicep` file. This will create a Guest Assignment resource and assosiate the VM to it
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vmWithSecurityBaseline" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters securityBaseline='true'
+az deployment sub create --location "NorthEurope" --name "vmWithSecurityBaseline" --template-file vm/main.bicep --parameters @vm/main.parameters.json --parameters securityBaseline='true'
 ```
 ### 4.4 Machine configuration: Enable AzureSecurityBaseline at scale
 Machine configuration, supports both Aduit and DeployIfNotExist with Azure Policy. But only Audit is supported for AzureSecurityBaseline. The recommeded way to do this is to use [Azure Automange Best Practies](https://learn.microsoft.com/en-us/azure/automanage/overview-about) custom profiles, to configure AzureSecurityBaseline on the VMs. Then we can assign the VMs to that custom profile through Azure policy.
@@ -450,12 +450,12 @@ Note: that Automanage Best Practies custom profile, is not supported in SwedenCe
 Create the Automange Best Preatices custom profile and assign the built-in policy on the subscription run the following command:
 
 ```bash
-az deployment sub create --location "SwedenCentral" --name "policyWithSecurityBaseline" --template-file policies/main.bicep --parameters @policies/main.parameters.json security='true'
+az deployment sub create --location "NorthEurope" --name "policyWithSecurityBaseline" --template-file policies/main.bicep --parameters @policies/main.parameters.json securityBaseline='true'
 ```
 
 To test deply the VMs again, with the following command:
 ```bash
-az deployment sub create --location "SwedenCentral" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
+az deployment sub create --location "NorthEurope" --name "vm" --template-file vm/main.bicep --parameters @vm/main.parameters.json
 ```
 
 ## Clean Up

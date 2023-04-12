@@ -1,5 +1,8 @@
-param name string
-param location string
+@description('Base prefix of all resources')
+param name string 
+
+@description('Location for all resources.')
+param location string = resourceGroup().location
 
 @allowed([
   'ApplyAndAutoCorrect'
